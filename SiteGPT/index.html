@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude vs ChatGPT — A Simple Comparison</title>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --text: #23211f;
+    --muted: #6b6661;
+    --border: #ebe6e0;
+    --claude: #c96442;
+    --claude-soft: #f8e9e2;
+    --gpt: #10a37f;
+    --gpt-soft: #e0f3ed;
+    --shadow: 0 4px 20px rgba(40, 30, 20, 0.07);
+    --radius: 18px;
+  }
+  [data-theme="dark"] {
+    --bg: #171615;
+    --surface: #22201e;
+    --text: #f1ede8;
+    --muted: #a8a19a;
+    --border: #34312d;
+    --claude: #e08560;
+    --claude-soft: #3a2a23;
+    --gpt: #2cc39b;
+    --gpt-soft: #1c3530;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 17px;
+    transition: background .3s, color .3s;
+  }
+  a { color: inherit; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+  .logo { font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .logo .c { color: var(--claude); } .logo .g { color: var(--gpt); }
+  .links { display: flex; gap: 22px; list-style: none; overflow-x: auto; scrollbar-width: none; }
+  .links::-webkit-scrollbar { display: none; }
+  .links a { text-decoration: none; color: var(--muted); font-size: 15px; white-space: nowrap; transition: color .2s; }
+  .links a:hover { color: var(--text); }
+  .theme-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; flex-shrink: 0;
+    transition: transform .2s;
+  }
+  .theme-btn:hover { transform: rotate(20deg); }
+
+  /* HERO */
+  .hero { text-align: center; padding: 110px 0 90px; }
+  .hero h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1.1; letter-spacing: -0.02em; }
+  .hero h1 .c { color: var(--claude); } .hero h1 .g { color: var(--gpt); }
+  .hero h1 .vs { color: var(--muted); font-weight: 400; font-size: .6em; vertical-align: middle; margin: 0 .2em; }
+  .hero p { color: var(--muted); font-size: 1.2rem; margin-top: 18px; }
+  .badge { display: inline-block; margin-top: 26px; padding: 6px 16px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); font-size: 14px; color: var(--muted); }
+
+  /* SECTIONS */
+  section { padding: 70px 0; }
+  h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -0.01em; margin-bottom: 10px; }
+  .lead { color: var(--muted); margin-bottom: 36px; max-width: 680px; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 30px; box-shadow: var(--shadow); transition: transform .25s, box-shadow .25s;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(40,30,20,.12); }
+  .card.claude { border-top: 5px solid var(--claude); }
+  .card.gpt { border-top: 5px solid var(--gpt); }
+  .card h3 { font-size: 1.5rem; margin-bottom: 14px; }
+  .claude h3, .claude h4 { color: var(--claude); }
+  .gpt h3, .gpt h4 { color: var(--gpt); }
+  .facts { list-style: none; }
+  .facts li { padding: 10px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .facts li:last-child { border-bottom: none; }
+  .facts span:first-child { color: var(--muted); }
+  .facts span:last-child { text-align: right; font-weight: 500; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 720px; }
+  th, td { padding: 16px 18px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); font-size: 15.5px; }
+  th { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg); }
+  th.c { color: var(--claude); } th.g { color: var(--gpt); }
+  td:first-child { font-weight: 600; width: 20%; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .2s; }
+  tbody tr:hover { background: color-mix(in srgb, var(--border) 35%, transparent); }
+  td.win-c { background: var(--claude-soft); }
+  td.win-g { background: var(--gpt-soft); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 99px; margin-left: 6px; color: #fff; }
+  .tag.c { background: var(--claude); } .tag.g { background: var(--gpt); }
+  .legend { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+  /* PROS CONS */
+  .pc h4 { margin: 18px 0 8px; font-size: 1.05rem; }
+  .pc ul { padding-left: 0; list-style: none; }
+  .pc li { padding: 6px 0 6px 28px; position: relative; }
+  .pc li.plus::before { content: "+"; position: absolute; left: 4px; font-weight: 700; color: var(--gpt); }
+  .pc li.minus::before { content: "–"; position: absolute; left: 6px; font-weight: 700; color: var(--claude); }
+
+  /* USE CASES */
+  .uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+  .use { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); transition: transform .25s; }
+  .use:hover { transform: translateY(-4px); }
+  .use .icon { font-size: 28px; }
+  .use h3 { margin: 8px 0 6px; font-size: 1.15rem; }
+  .use p { color: var(--muted); font-size: 15px; }
+  .pick { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+  .pick.c { background: var(--claude-soft); color: var(--claude); }
+  .pick.g { background: var(--gpt-soft); color: var(--gpt); }
+  .pick.b { background: var(--border); color: var(--text); }
+
+  /* CONCLUSION */
+  .conclusion { text-align: center; background: linear-gradient(135deg, var(--claude-soft), var(--gpt-soft)); border-radius: 28px; padding: 60px 30px; }
+  .conclusion p { max-width: 720px; margin: 14px auto 0; font-size: 1.1rem; }
+
+  /* SOURCES / FOOTER */
+  .sources ol { padding-left: 22px; color: var(--muted); font-size: 15px; }
+  .sources li { margin-bottom: 6px; word-break: break-word; }
+  .sources a { color: var(--text); }
+  footer { text-align: center; padding: 40px 0 50px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); margin-top: 40px; }
+
+  /* SCROLL ANIMATION */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  @media (max-width: 700px) {
+    body { font-size: 16px; }
+    .links { gap: 14px; }
+    .links a { font-size: 13px; }
+    .hero { padding: 70px 0 50px; }
+    section { padding: 50px 0; }
+    .card { padding: 22px; }
+  }
+  @media (min-width: 1600px) { body { font-size: 19px; } .container { max-width: 1280px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="#top" class="logo"><span class="c">Claude</span> vs <span class="g">ChatGPT</span></a>
+    <ul class="links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#differences">Differences</a></li>
+      <li><a href="#pros-cons">Pros &amp; Cons</a></li>
+      <li><a href="#choose">Choose</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ul>
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</nav>
+
+<header class="hero container" id="top">
+  <h1><span class="c">Claude</span><span class="vs">vs</span><span class="g">ChatGPT</span></h1>
+  <p>Two popular AI assistants. Different strengths. Which one fits you?</p>
+  <span class="badge">Facts checked: November 2026</span>
+</header>
+
+<main>
+<!-- 1. OVERVIEW -->
+<section id="overview" class="container">
+  <h2 class="reveal">Quick overview</h2>
+  <p class="lead reveal">The basic facts about each assistant.</p>
+  <div class="grid-2">
+    <div class="card claude reveal">
+      <h3>Claude</h3>
+      <ul class="facts">
+        <li><span>Developer</span><span>Anthropic (founded 2021)</span></li>
+        <li><span>First release</span><span>March 2023</span></li>
+        <li><span>Current models</span><span>Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1</span></li>
+        <li><span>Best known for</span><span>Natural writing, coding, long documents</span></li>
+      </ul>
+    </div>
+    <div class="card gpt reveal">
+      <h3>ChatGPT</h3>
+      <ul class="facts">
+        <li><span>Developer</span><span>OpenAI (founded 2015)</span></li>
+        <li><span>First release</span><span>November 2022</span></li>
+        <li><span>Current model</span><span>GPT-6 (default since Oct 2026)</span></li>
+        <li><span>Best known for</span><span>Many features in one app, images, voice</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 2. DIFFERENCES -->
+<section id="differences" class="container">
+  <h2 class="reveal">Key differences</h2>
+  <p class="lead reveal">A highlighted cell shows a clear advantage. Rows without a highlight are roughly equal.</p>
+  <div class="table-wrap reveal">
+    <table>
+      <thead>
+        <tr><th>Feature</th><th class="c">Claude</th><th class="g">ChatGPT</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Design philosophy</td><td>Safety-first company; a careful, thoughtful assistant</td><td>"All-in-one" assistant with a very wide set of tools</td></tr>
+        <tr><td>Writing style</td><td class="win-c">Often more natural and less "robotic" <span class="tag c">Edge</span></td><td>Clear and flexible; recent update made answers shorter and less flattering</td></tr>
+        <tr><td>Coding</td><td>Strong; Claude Code agent for developers</td><td>Strong; Codex agent for developers</td></tr>
+        <tr><td>Long documents &amp; context</td><td>Up to 1M tokens (Opus 5.5)</td><td>Very large context in the newest models</td></tr>
+        <tr><td>Multimodal (files, images)</td><td>Reads PDFs, images, spreadsheets</td><td>Reads PDFs, images, audio; answers can include charts and buttons</td></tr>
+        <tr><td>Web search</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Image generation</td><td>No built-in image model (can draw charts/diagrams with code)</td><td class="win-g">Yes, ChatGPT Images <span class="tag g">Winner</span></td></tr>
+        <tr><td>Voice</td><td>Voice mode in the apps</td><td class="win-g">Advanced real-time voice, more mature <span class="tag g">Edge</span></td></tr>
+        <tr><td>Integrations</td><td>Connectors to apps like Google Drive, Slack (MCP standard)</td><td>Plugins and app ecosystem (also supports MCP)</td></tr>
+        <tr><td>Pricing (USD / month)</td><td>Free · Pro $20 · Max $100 / $200</td><td class="win-g">Free · Go $8 · Plus $20 · Pro $100 / $200 <span class="tag g">Cheaper entry</span></td></tr>
+        <tr><td>Privacy &amp; safety</td><td>Strong public focus on AI safety research</td><td>Safety rules and teen protections; Free and Go plans may show ads</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="legend">Prices are US prices and can be different in other countries.</p>
+</section>
+
+<!-- 3. PROS AND CONS -->
+<section id="pros-cons" class="container">
+  <h2 class="reveal">Strengths and weaknesses</h2>
+  <p class="lead reveal">No assistant is perfect. Here is an honest summary.</p>
+  <div class="grid-2">
+    <div class="card claude pc reveal">
+      <h3>Claude</h3>
+      <h4>Strengths</h4>
+      <ul>
+        <li class="plus">Natural, human-like writing</li>
+        <li class="plus">Very good at coding and long tasks</li>
+        <li class="plus">Handles very long documents</li>
+        <li class="plus">No ads on any plan</li>
+      </ul>
+      <h4>Weaknesses</h4>
+      <ul>
+        <li class="minus">Cannot create images</li>
+        <li class="minus">Free plan has tighter usage limits</li>
+        <li class="minus">Fewer extra features than ChatGPT</li>
+      </ul>
+    </div>
+    <div class="card gpt pc reveal">
+      <h3>ChatGPT</h3>
+      <h4>Strengths</h4>
+      <ul>
+        <li class="plus">Many tools in one place</li>
+        <li class="plus">Image generation and strong voice mode</li>
+        <li class="plus">Cheap "Go" plan for $8</li>
+        <li class="plus">Huge user community and guides</li>
+      </ul>
+      <h4>Weaknesses</h4>
+      <ul>
+        <li class="minus">Free and Go plans may show ads</li>
+        <li class="minus">Free users get a lighter model</li>
+        <li class="minus">Many plans and model names can be confusing</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CHOOSE -->
+<section id="choose" class="container">
+  <h2 class="reveal">Which one should you choose?</h2>
+  <p class="lead reveal">It depends on what you need. Both have a free plan, so you can try them.</p>
+  <div class="uses">
+    <div class="use reveal"><div class="icon">📚</div><h3>Study</h3><p>Both explain topics well. Claude is good with long readings; ChatGPT with voice practice.</p><span class="pick b">Both work</span></div>
+    <div class="use reveal"><div class="icon">💻</div><h3>Coding</h3><p>Both are strong. Many developers like Claude Code for big projects.</p><span class="pick c">Slight edge: Claude</span></div>
+    <div class="use reveal"><div class="icon">✍️</div><h3>Writing</h3><p>Essays, emails, reports. Claude's style often sounds more natural.</p><span class="pick c">Claude</span></div>
+    <div class="use reveal"><div class="icon">🎨</div><h3>Creative work</h3><p>Need pictures, posters or images? Only ChatGPT can make them.</p><span class="pick g">ChatGPT</span></div>
+    <div class="use reveal"><div class="icon">🔎</div><h3>Research</h3><p>Both search the web and give sources. Always check the facts.</p><span class="pick b">Both work</span></div>
+  </div>
+</section>
+
+<!-- 5. CONCLUSION -->
+<section id="conclusion" class="container">
+  <div class="conclusion reveal">
+    <h2>Conclusion</h2>
+    <p>There is no single winner. <strong style="color:var(--claude)">Claude</strong> is a focused tool for writing, coding and long documents. <strong style="color:var(--gpt)">ChatGPT</strong> is a "Swiss Army knife" with images, voice and many extras. The best choice depends on your task — and many people use both.</p>
+  </div>
+</section>
+
+<!-- 6. SOURCES -->
+<section id="sources" class="container sources">
+  <h2 class="reveal">Sources</h2>
+  <ol class="reveal">
+    <li><a href="https://platform.claude.com/docs/en/models/opus-5-5/overview" target="_blank" rel="noopener">Anthropic — Claude Opus 5.5 model overview</a></li>
+    <li><a href="https://help.openai.com/en/articles/9624314-model-release-notes" target="_blank" rel="noopener">OpenAI — ChatGPT model release notes</a></li>
+    <li><a href="https://www.lilachbullock.com/chatgpt-models/" target="_blank" rel="noopener">ChatGPT Models in 2026 (Oct 2026)</a></li>
+    <li><a href="https://www.llmreference.com/researcher/anthropic" target="_blank" rel="noopener">LLM Reference — Anthropic model releases</a></li>
+    <li><a href="https://geotoolbox.ai/blog/chatgpt-pricing" target="_blank" rel="noopener">GEO Toolbox — ChatGPT pricing 2026</a></li>
+    <li><a href="https://www.ai-toolbox.co/claude-models/claude-pricing-plans-2026" target="_blank" rel="noopener">AI Toolbox — Claude pricing plans 2026</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/ChatGPT" target="_blank" rel="noopener">Wikipedia — ChatGPT</a></li>
+    <li><a href="https://zapier.com/blog/claude-vs-chatgpt/" target="_blank" rel="noopener">Zapier — Claude vs ChatGPT</a></li>
+  </ol>
+</section>
+</main>
+
+<footer>
+  <div class="container">University project · Claude vs ChatGPT · November 2026<br>AI products change fast — check official sites for the latest details.</div>
+</footer>
+
+<script>
+  // Theme toggle (remembers choice if storage works)
+  const btn = document.getElementById('themeBtn');
+  const root = document.documentElement;
+  function setTheme(t) {
+    root.setAttribute('data-theme', t);
+    btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    try { localStorage.setItem('theme', t); } catch (e) {}
+  }
+  let saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  setTheme(saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  btn.addEventListener('click', () => setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+  // Scroll animations
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
